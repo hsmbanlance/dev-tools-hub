@@ -4,6 +4,8 @@ name: Build all tools & deploy to Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,7 +28,8 @@ jobs:
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
           echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
-          sudo apt-get install -y clang-20 libclang-20-dev llvm-20-dev cmake ninja-build
+          sudo apt-get install -y clang-20 llvm-20-dev cmake ninja-build
+          sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-20 100
 
       # 1. CppInsights  --------------------------
       - name: Build CppInsights static web
