@@ -31,10 +31,11 @@ jobs:
 
       # 1. CppInsights --------------------------
       - name: Install Clang/LLVM
-        run: sudo apt-get update && sudo apt-get install -y clang llvm cmake ninja-build
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
       - name: Build CppInsights static web
         working-directory: tools/cppinsights   # 等价于 cd tools/cppinsights
         run: |
+          llvm-config --version
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DINSIGHTS_STATIC=ON
           cmake --build build --target web
           mkdir -p ../../public/cppinsights
