@@ -67,15 +67,15 @@ jobs:
         with:
           node-version: 20
       - name: Build Perfetto UI
-        working-directory: tools/perfetto/ui
+        working-directory: tools/perfetto
         run: |
-          npm ci && npm run build
-          mkdir -p ../../public/perfetto
-          cp -r dist/* ../../public/perfetto/
+          tools/install-build-deps --ui
+          ui/build
+          cp -r ui/out/dist/* ../../public/perfetto/
 
       # 3. Compiler Explorer (godbolt) --------
       - uses: actions/setup-node@v4
-        with: 
+        with:
           node-version: 20
       - name: Build Compiler Explorer
         working-directory: tools/compiler-explorer
