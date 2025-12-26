@@ -37,9 +37,9 @@ jobs:
         run: |
           llvm-config --version
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DINSIGHTS_STATIC=ON
-          cmake --build build --target web
+          cmake --build build --target insights-html
           mkdir -p ../../public/cppinsights
-          cp -r build/web/* ../../public/cppinsights/
+          cp -r build/insights/html/* ../../public/cppinsights/
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
