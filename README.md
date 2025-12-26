@@ -48,6 +48,8 @@
 - 提交信息："chore: fix site/index.html (viewport + rel) and move workflow to .github/workflows; add static-checks README"
 - 下步建议：若需要，可对 `site/` 使用更完备的 HTML 验证（例如 `tidy`）以及对 CI workflow 在 Ubuntu runner 上做一次测试构建。
 
+- 注意：在 CI 运行中发现 `libpolly-dev` 在默认 Ubuntu 仓库不可用，直接安装该包会失败。已改为使用 `apt.llvm.org` 的 `llvm.sh` 安装脚本（与 `tools/cppinsights` 保持一致），该脚本会安装包含 Polly/ISL 的适配版 LLVM；如有必要，我也可以改为下载并解压官方 clang+llvm 二进制包以保证构建一致性。
+
 ---
 
 如需我把这些更改拆成更小的提交、运行具体 linters，或把静态检查脚本加入 CI，请告诉我下一步要做的事项。
