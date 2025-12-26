@@ -19,20 +19,48 @@ jobs:
     steps:
       - uses: actions/checkout@v4   # 仅为了拿导航页 site/
 
-      # 1. 一次性拉取三个官方镜像
-      - name: Pull upstream images
-        run: |
-          docker pull andreasfertig/cppinsights-webfrontend-container:latest
+      - name: Prepare public dirs
+        run: mkdir -p public/{cppinsights,perfetto,godbolt}
 
       # 2. 复制静态文件
       - name: Extract static files
         run: |
-          mkdir -p public/{cppinsights,perfetto,godbolt}
+          set -euo pipefail
 
-          # CppInsights
-          docker run --rm -d --name cppins andreasfertig/cppinsights-webfrontend-container:latest sleep 10
-          docker cp cppins:/usr/share/nginx/html/. public/cppinsights/
-          docker stop cppins
+          mkdir -p public/cppinsights
+          cd public/cppinsights
+
+          # 基础入口
+          curl -L -O https://cppinsights.io/
+
+          # 所有静态资源（按 F12 实际路径）
+          BASE=https://cppinsights.io/static
+
+          # CSS
+          curl -L -O $BASE/css/main.min.css
+          curl -L -O $BASE/css/cookie.min.css
+
+          # JS
+          curl -L -O $BASE/js/main.min.js
+          curl -L -O $BASE/js/cookie.min.js
+          curl -L -O $BASE/js/settings.min.js
+          curl -L -O $BASE/js/cm.min.js
+
+          # 第三方库
+          curl -L -O $BASE/js/jquery-3.3.1.min.js
+          curl -L -O $BASE/js/multiple-select.min.js
+
+          # 图标 & 字体
+          curl -L -O $BASE/img/logo.svg
+          curl -L -O $BASE/img/nav.svg
+          curl -L -O $BASE/img/ce.svg
+          curl -L -O $BASE/img/clb.svg
+          curl -L -O $BASE/img/qb.svg
+          curl -L -O $BASE/img/sponsor-getcracked.svg
+
+          # favicon & manifest
+          curl -L -O https://cppinsights.io/favicon.ico
+          curl -L -O https://cppinsights.io/manifest.json
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
