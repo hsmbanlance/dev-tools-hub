@@ -36,19 +36,20 @@ jobs:
           docker stop cppins
 
           # Godbolt
-          docker run --rm -d --name ce compilerexplorer/compiler-explorer:latest sleep 10
+          docker run --rm -d --name ce ghcr.io/compiler-explorer/compiler-explorer:main sleep 10
           docker cp ce:/out/dist/. public/godbolt/
           docker stop ce
 
-      # Perfetto UI 
+      # Perfetto UI
       - uses: actions/setup-node@v4
         with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/perfetto/ui/package-lock.json}
+      
       - name: Build Perfetto UI
         working-directory: tools/perfetto/ui
         run: |
           npm ci && npm run build
           mkdir -p ../../public/perfetto
-          cp -r dist/* ../../public/perfetto/  
+          cp -r dist/* ../../public/perfetto/
 
       # 3. 导航页
       - name: Copy landing page
