@@ -39,7 +39,6 @@ jobs:
       - name: Build CppInsights static web
         working-directory: tools/cppinsights
         run: |
-          llvm-config-20 --libs | grep -c Polly
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DINSIGHTS_STATIC=ON \
