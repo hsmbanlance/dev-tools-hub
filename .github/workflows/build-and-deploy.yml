@@ -20,7 +20,7 @@ jobs:
         with: {submodules: recursive}
 
       # 放在 Install Clang/LLVM 步骤之前
-      - name: 安装 LLVM 20
+      - name: Install LLVM 20
         run: |
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
           echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-20 main" | sudo tee /etc/apt/sources.list.d/llvm.list
@@ -37,9 +37,9 @@ jobs:
         run: |
           llvm-config --version
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DINSIGHTS_STATIC=ON
-          cmake --build build --target insights-html
+          cmake --build build --target insight
           mkdir -p ../../public/cppinsights
-          cp -r build/insights/html/* ../../public/cppinsights/
+          cp -r build/insight/* ../../public/cppinsights/
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
