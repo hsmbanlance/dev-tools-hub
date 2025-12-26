@@ -11,6 +11,8 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  LLVM_VERSION: "20.1.0" 
 
 jobs:
   build:
@@ -19,29 +21,26 @@ jobs:
       - uses: actions/checkout@v4
         with: {submodules: recursive}
 
-      # 放在 Install Clang/LLVM 步骤之前
-      - name: Install LLVM 20
+      - name: Install LLVM/Clang
         run: |
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
-          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-20 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
-          sudo apt-get install -y \
-            clang-20 llvm-20-dev llvm-20-tools \
-            libclang-20-dev libclang-cpp20-dev \
-            cmake ninja-build
-          sudo update-alternatives --install /usr/bin/clang        clang        /usr/bin/clang-20        100
-          sudo update-alternatives --install /usr/bin/clang++      clang++      /usr/bin/clang++-20      100
-          sudo update-alternatives --install /usr/bin/llvm-config  llvm-config  /usr/bin/llvm-config-20  100
+          sudo apt-get install -y clang-20 libclang-20-dev llvm-20-dev cmake ninja-build
 
-      # 1. CppInsights --------------------------
+      # 1. CppInsights  --------------------------
       - name: Build CppInsights static web
-        working-directory: tools/cppinsights   # 等价于 cd tools/cppinsights
+        working-directory: tools/cppinsights
         run: |
-          llvm-config --version
-          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DINSIGHTS_STATIC=ON -DLLVM_LIBS="$LLVM_LIBS"
-          cmake --build build --target insights
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DINSIGHTS_STATIC=ON \
+            -DCMAKE_CXX_COMPILER=clang++-20 \
+            -DCMAKE_C_COMPILER=clang-20
+          cmake --build build --target insight
           mkdir -p ../../public/cppinsights
-          cp -r build/insights/* ../../public/cppinsights/
+          cp -r build/insight/* ../../public/cppinsights/
+
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
