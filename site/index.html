@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dev-Tools Hub</title>
+  <style>
+    :root{--primary:#0366d6;--secondary:#f6f8fa;--text:#24292e;--muted:#656d76}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:#f6f8fa;margin:0;padding:2rem;color:var(--text)}
+    header{text-align:center;margin-bottom:2rem}
+    .grid{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem}
+    .card{background:#fff;border:1px solid #d0d7de;border-radius:8px;width:280px;padding:1.5rem;display:flex;flex-direction:column}
+    .card h3{margin:.4rem 0 .6rem}
+    .card p{flex:1;font-size:.9rem;color:var(--muted);margin:.5rem 0 1rem}
+    .card-footer{display:flex;gap:.5rem;margin-top:auto}
+    .btn{flex:1;text-align:center;padding:.5rem;border-radius:4px;text-decoration:none;font-size:.85rem}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{background:#0256cc}
+    .btn-secondary{background:var(--secondary);color:var(--text);border:1px solid #d0d7de}
+    .btn-secondary:hover{background:#f3f4f6}
+    footer{margin-top:3rem;font-size:.8rem;color:var(--muted);text-align:center;border-top:1px solid #d0d7de;padding-top:1rem}
+    footer ul{list-style:none;padding:0}footer li{margin:.25rem 0}footer a{color:var(--primary)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Dev-Tools Hub</h1>
+    <p>聚合常用编译 / 追踪 / 基准工具；点击「官方」直达作者部署的线上版本，本仓库仅提供静态镜像备份。</p>
+  </header>
+
+  <section class="grid">
+    <div class="card"><h3>CppInsights</h3><p>C++ 语法脱糖即时查看</p><div class="card-footer"><a class="btn btn-primary" href="cppinsights/">本地镜像</a><a class="btn btn-secondary" href="https://cppinsights.io" target="_blank" rel="noopener noreferrer">官方</a><a class="btn btn-secondary" href="https://github.com/andreasfertig/cppinsights" target="_blank" rel="noopener noreferrer">仓库</a></div></div>
+    <div class="card"><h3>Perfetto</h3><p>全栈性能追踪可视化</p><div class="card-footer"><a class="btn btn-primary" href="perfetto/">本地镜像</a><a class="btn btn-secondary" href="https://ui.perfetto.dev" target="_blank" rel="noopener noreferrer">官方</a><a class="btn btn-secondary" href="https://android.googlesource.com/platform/external/perfetto" target="_blank" rel="noopener noreferrer">仓库</a></div></div>
+    <div class="card"><h3>Compiler Explorer</h3><p>汇编对照在线编译</p><div class="card-footer"><a class="btn btn-primary" href="godbolt/">本地镜像</a><a class="btn btn-secondary" href="https://godbolt.org" target="_blank" rel="noopener noreferrer">官方</a><a class="btn btn-secondary" href="https://github.com/compiler-explorer/compiler-explorer" target="_blank" rel="noopener noreferrer">仓库</a></div></div>
+  </section>
+
+  <footer>
+    <p>所有工具静态文件版权归对应上游项目所有，协议列表：</p>
+    <ul>
+      <li><a href="https://github.com/andreasfertig/cppinsights/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">CppInsights – MIT</a></li>
+      <li><a href="https://android.googlesource.com/platform/external/perfetto/+/main/LICENSE" target="_blank" rel="noopener noreferrer">Perfetto – Apache-2.0</a></li>
+      <li><a href="https://github.com/compiler-explorer/compiler-explorer/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">Compiler Explorer – BSD-2-Clause</a></li>
+    </ul>
+    <p>本导航页本身采用 <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">MIT</a> 协议。</p>
+  </footer>
+</body>
+</html>

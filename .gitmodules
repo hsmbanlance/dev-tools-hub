@@ -1,0 +1,12 @@
+[submodule "tools/cppinsights"]
+	path = tools/cppinsights
+	url = https://github.com/andreasfertig/cppinsights.git
+[submodule "tools/perfetto"]
+	path = tools/perfetto
+	url = https://github.com/google/perfetto.git
+[submodule "tools/compiler-explorer"]
+	path = tools/compiler-explorer
+	url = https://github.com/compiler-explorer/compiler-explorer.git
+[submodule "tools/wabt"]
+	path = tools/wabt
+	url = https://github.com/WebAssembly/wabt.git
