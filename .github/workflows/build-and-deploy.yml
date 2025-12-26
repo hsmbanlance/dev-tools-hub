@@ -25,15 +25,36 @@ jobs:
 
       - name: Install LLVM/Clang
         run: |
-          # Use the official apt.llvm.org installer (ensures all LLVM components like Polly/ISL are available)
+          set -euo pipefail
+          # Try installing via apt helper first
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 20
+          sudo ./llvm.sh 20 || true
           sudo apt-get update
-          sudo apt-get install -y clang-20 cmake ninja-build libclang-20-dev libisl-dev
-          sudo update-alternatives --install /usr/bin/clang        clang        /usr/bin/clang-20        100
-          sudo update-alternatives --install /usr/bin/clang++      clang++      /usr/bin/clang++-20      100
-          sudo update-alternatives --install /usr/bin/llvm-config  llvm-config  /usr/bin/llvm-config-20  100
+          sudo apt-get install -y clang-20 cmake ninja-build libclang-20-dev libisl-dev || true
+
+          # If Polly is missing in the installed LLVM, fall back to downloading a prebuilt clang+llvm binary
+          if [ -f /usr/lib/llvm-20/lib/libPolly.a ] || [ -f /usr/lib/llvm-20/lib/libPolly.so ]; then
+            echo "Polly found in system LLVM"
+            sudo update-alternatives --install /usr/bin/clang        clang        /usr/bin/clang-20        100 || true
+            sudo update-alternatives --install /usr/bin/clang++      clang++      /usr/bin/clang++-20      100 || true
+            sudo update-alternatives --install /usr/bin/llvm-config  llvm-config  /usr/bin/llvm-config-20  100 || true
+          else
+            echo "Polly not found; downloading prebuilt clang+llvm binary (fallback)"
+            ARCHIVE="clang+llvm-${{ env.LLVM_VERSION }}-x86_64-linux-gnu-ubuntu-22.04"
+            URL="https://github.com/andreasfertig/cppinsights-compiler-binaries/releases/download/${{ env.LLVM_VERSION }}/${ARCHIVE}.tar.xz"
+            echo "Attempting to download ${URL}"
+            if curl -fSL -o llvm.tar.xz "${URL}"; then
+              mkdir -p current
+              tar -xJf llvm.tar.xz -C current --strip-components=1
+              echo "${{ github.workspace }}/current/bin" >> $GITHUB_PATH
+              export PATH="${{ github.workspace }}/current/bin:$PATH"
+              echo "Installed fallback LLVM to current/"
+            else
+              echo "Fallback binary not available at ${URL}; please ensure the runner has Polly or provide an alternative build step." >&2
+              exit 1
+            fi
+          fi
 
       # 1. CppInsights  --------------------------
       - name: Build CppInsights static web
