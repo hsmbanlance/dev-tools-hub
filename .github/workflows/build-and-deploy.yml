@@ -28,8 +28,8 @@ jobs:
         run: |
           mkdir -p public/{cppinsights,perfetto,godbolt}
 
-          # 1) CppInsights 官方镜像
-          docker run --rm -d --name cppins cppinsights/cppinsights:latest sleep 10
+          # 1) CppInsights 社区镜像
+          docker run --rm -d --name cppins andreasfertig/cppinsights:latest sleep 10
           docker cp cppins:/usr/share/cppinsights/web/. public/cppinsights/
           docker stop cppins
 
