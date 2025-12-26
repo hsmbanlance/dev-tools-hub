@@ -25,13 +25,15 @@ jobs:
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
           echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-20 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
-          sudo apt-get install -y clang-20 llvm-20 llvm-20-dev cmake ninja-build
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 100
-          sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-20 100
+          sudo apt-get install -y \
+            clang-20 llvm-20-dev llvm-20-tools \
+            libclang-20-dev libclang-cpp20-dev \
+            cmake ninja-build
+          sudo update-alternatives --install /usr/bin/clang        clang        /usr/bin/clang-20        100
+          sudo update-alternatives --install /usr/bin/clang++      clang++      /usr/bin/clang++-20      100
+          sudo update-alternatives --install /usr/bin/llvm-config  llvm-config  /usr/bin/llvm-config-20  100
 
       # 1. CppInsights --------------------------
-      - name: Install Clang/LLVM
-        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
       - name: Build CppInsights static web
         working-directory: tools/cppinsights   # 等价于 cd tools/cppinsights
         run: |
