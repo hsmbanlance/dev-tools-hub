@@ -13,45 +13,44 @@ permissions:
   pages: write
   id-token: write
 
-env:
-  LLVM_VERSION: "20.1.0"
-
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with: {submodules: recursive}
+      - uses: actions/checkout@v4   # 仅为了拿导航页 site/
 
-      # 1. 启动三个官方镜像并复制静态产物 -----------------
-      - name: Extract static files from upstream images
+      # 1. 一次性拉取三个官方镜像
+      - name: Pull upstream images
+        run: |
+          docker pull andreasfertig/cppinsights-webfrontend-container:latest
+          docker pull perfetto/perfetto:latest
+          docker pull compilerexplorer/compiler-explorer:latest
+
+      # 2. 复制静态文件
+      - name: Extract static files
         run: |
           mkdir -p public/{cppinsights,perfetto,godbolt}
 
-          # 1) CppInsights 社区镜像
-          curl -L -o cppinsights-container.tar \
-            https://github.com/andreasfertig/cppinsights-webfrontend-container/releases/download/latest/cppinsights-container.tar
-          curl -L -o cppinsights-webfrontend-container.tar \
-            https://github.com/andreasfertig/cppinsights-webfrontend-container/releases/download/latest/cppinsights-webfrontend-container.tar
-          docker load -i cppinsights-container.tar
-          docker load -i cppinsights-webfrontend-container.tar
+          # CppInsights
+          docker run --rm -d --name cppins andreasfertig/cppinsights-webfrontend-container:latest sleep 10
+          docker cp cppins:/usr/share/nginx/html/. public/cppinsights/
+          docker stop cppins
 
-          # 2) Perfetto UI 官方镜像
+          # Perfetto
           docker run --rm -d --name perf perfetto/perfetto:latest sleep 10
           docker cp perf:/ui/dist/. public/perfetto/
           docker stop perf
 
-          # 3) Godbolt (Compiler Explorer) 官方镜像
+          # Godbolt
           docker run --rm -d --name ce compilerexplorer/compiler-explorer:latest sleep 10
           docker cp ce:/out/dist/. public/godbolt/
           docker stop ce
 
-      # 2. 复制导航页 ----------------------------------
+      # 3. 导航页
       - name: Copy landing page
-        run: |
-          cp -r site/* public/
+        run: cp -r site/* public/
 
-      # 3. 上传 Pages 产物 ------------------------------
+      # 4. 上传 Pages 产物
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public
@@ -65,4 +64,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-
