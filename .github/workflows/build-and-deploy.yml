@@ -23,81 +23,35 @@ jobs:
       - uses: actions/checkout@v4
         with: {submodules: recursive}
 
-      - name: Install LLVM/Clang
+      # 1. 启动三个官方镜像并复制静态产物 -----------------
+      - name: Extract static files from upstream images
         run: |
-          set -euo pipefail
-          # Try installing via apt helper first
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 20 || true
-          sudo apt-get update
-          
-          # If Polly is missing in the installed LLVM, fall back to downloading a prebuilt clang+llvm binary
-          if [ -f /usr/lib/llvm-20/lib/libPolly.a ] || [ -f /usr/lib/llvm-20/lib/libPolly.so ]; then
-            echo "Polly found in system LLVM"
-            sudo update-alternatives --install /usr/bin/clang        clang        /usr/bin/clang-20        100 || true
-            sudo update-alternatives --install /usr/bin/clang++      clang++      /usr/bin/clang++-20      100 || true
-            sudo update-alternatives --install /usr/bin/llvm-config  llvm-config  /usr/bin/llvm-config-20  100 || true
-          else
-            echo "Polly not found; downloading prebuilt clang+llvm binary (fallback)"
-            ARCHIVE="clang+llvm-${{ env.LLVM_VERSION }}-x86_64-linux-gnu-ubuntu-22.04"
-            URL="https://github.com/andreasfertig/cppinsights-compiler-binaries/releases/download/${{ env.LLVM_VERSION }}/${ARCHIVE}.tar.xz"
-            echo "Attempting to download ${URL}"
-            if curl -fSL -o llvm.tar.xz "${URL}"; then
-              mkdir -p current
-              tar -xJf llvm.tar.xz -C current --strip-components=1
-              echo "${{ github.workspace }}/current/bin" >> $GITHUB_PATH
-              export PATH="${{ github.workspace }}/current/bin:$PATH"
-              echo "Installed fallback LLVM to current/"
-            else
-              echo "Fallback binary not available at ${URL}; please ensure the runner has Polly or provide an alternative build step." >&2
-              exit 1
-            fi
-          fi
+          mkdir -p public/{cppinsights,perfetto,godbolt}
 
-      # 1. CppInsights  --------------------------
-      - name: Build CppInsights static web
-        working-directory: tools/cppinsights
+          # 1) CppInsights 官方镜像
+          docker run --rm -d --name cppins cppinsights/cppinsights:latest sleep 10
+          docker cp cppins:/usr/share/cppinsights/web/. public/cppinsights/
+          docker stop cppins
+
+          # 2) Perfetto UI 官方镜像
+          docker run --rm -d --name perf perfetto/perfetto:latest sleep 10
+          docker cp perf:/ui/dist/. public/perfetto/
+          docker stop perf
+
+          # 3) Godbolt (Compiler Explorer) 官方镜像
+          docker run --rm -d --name ce compilerexplorer/compiler-explorer:latest sleep 10
+          docker cp ce:/out/dist/. public/godbolt/
+          docker stop ce
+
+      # 2. 复制导航页 ----------------------------------
+      - name: Copy landing page
         run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DINSIGHTS_STATIC=ON \
-            -DCMAKE_CXX_COMPILER=clang++-20 \
-            -DCMAKE_C_COMPILER=clang-20
-          cmake --build build --target insights
-          mkdir -p ../../public/cppinsights
-          cp -r build/insights/* ../../public/cppinsights/
-
-
-      # 2. Perfetto UI --------------------------
-      - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/perfetto/ui/package-lock.json}
-      - name: Build Perfetto UI
-        working-directory: tools/perfetto/ui
-        run: |
-          npm ci && npm run build
-          mkdir -p ../../public/perfetto
-          cp -r dist/* ../../public/perfetto/
-
-      # 3. Compiler Explorer (godbolt) --------
-      - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/compiler-explorer/package-lock.json}
-      - name: Build Compiler Explorer
-        working-directory: tools/compiler-explorer
-        run: |
-          npm ci && npm run webpack
-          mkdir -p ../public/godbolt
-          cp -r out/dist/* ../public/godbolt/
-
-      # 4. 导航页 ------------------------------
-      - name: Create public dir & copy site
-        run: |
-          mkdir -p public
           cp -r site/* public/
 
-      # 5. 上传 Pages 产物 ----------------------
+      # 3. 上传 Pages 产物 ------------------------------
       - uses: actions/upload-pages-artifact@v3
-        with: {path: public}
+        with:
+          path: public
 
   deploy:
     needs: build
@@ -108,3 +62,4 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
