@@ -17,7 +17,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4   # 仅为了拿导航页 site/
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Prepare public dirs
         run: mkdir -p public/{cppinsights,perfetto,godbolt}
