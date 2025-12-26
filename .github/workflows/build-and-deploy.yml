@@ -62,7 +62,8 @@ jobs:
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/perfetto/ui/package-lock.json}
+        with:
+          node-version: 20
       - name: Build Perfetto UI
         working-directory: tools/perfetto/ui
         run: |
@@ -72,7 +73,8 @@ jobs:
 
       # 3. Compiler Explorer (godbolt) --------
       - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/compiler-explorer/package-lock.json}
+        with: 
+          node-version: 20
       - name: Build Compiler Explorer
         working-directory: tools/compiler-explorer
         run: |
