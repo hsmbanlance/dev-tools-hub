@@ -23,7 +23,6 @@ jobs:
       - name: Pull upstream images
         run: |
           docker pull andreasfertig/cppinsights-webfrontend-container:latest
-          docker pull gcr.io/perfetto-ui/perfetto-ui:latest
           docker pull compilerexplorer/compiler-explorer:latest
 
       # 2. 复制静态文件
@@ -36,15 +35,22 @@ jobs:
           docker cp cppins:/usr/share/nginx/html/. public/cppinsights/
           docker stop cppins
 
-          # Perfetto
-          docker run --rm -d --name perf perfetto/perfetto:latest sleep 10
-          docker cp perf:/ui/dist/. public/perfetto/
-          docker stop perf
-
           # Godbolt
           docker run --rm -d --name ce compilerexplorer/compiler-explorer:latest sleep 10
           docker cp ce:/out/dist/. public/godbolt/
           docker stop ce
+
+      # Perfetto UI 
+      - uses: actions/setup-node@v4
+        with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/perfetto/ui/package-lock.json}
+      - name: Build Perfetto UI
+        working-directory: tools/perfetto/ui
+        run: |
+          npm ci && npm run build
+          mkdir -p ../../public/perfetto
+          cp -r dist/* ../../public/perfetto/
+      
+      - name: 
 
       # 3. 导航页
       - name: Copy landing page
