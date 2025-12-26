@@ -30,37 +30,35 @@ jobs:
           mkdir -p public/cppinsights
           cd public/cppinsights
 
-          # 基础入口
-          curl -L -O https://cppinsights.io/
+          # 首页
+          curl -L https://cppinsights.io/ -o index.html
 
-          # 所有静态资源（按 F12 实际路径）
+          # 静态资源根目录
           BASE=https://cppinsights.io/static
 
           # CSS
-          curl -L -O $BASE/css/main.min.css
-          curl -L -O $BASE/css/cookie.min.css
+          curl -L $BASE/css/main.min.css      -o main.min.css
+          curl -L $BASE/css/cookie.min.css    -o cookie.min.css
 
           # JS
-          curl -L -O $BASE/js/main.min.js
-          curl -L -O $BASE/js/cookie.min.js
-          curl -L -O $BASE/js/settings.min.js
-          curl -L -O $BASE/js/cm.min.js
+          curl -L $BASE/js/main.min.js        -o main.min.js
+          curl -L $BASE/js/cookie.min.js      -o cookie.min.js
+          curl -L $BASE/js/settings.min.js    -o settings.min.js
+          curl -L $BASE/js/cm.min.js          -o cm.min.js
+          curl -L $BASE/js/jquery-3.3.1.min.js -o jquery-3.3.1.min.js
+          curl -L $BASE/js/multiple-select.min.js -o multiple-select.min.js
 
-          # 第三方库
-          curl -L -O $BASE/js/jquery-3.3.1.min.js
-          curl -L -O $BASE/js/multiple-select.min.js
+          # 图标
+          curl -L $BASE/img/logo.svg                   -o logo.svg
+          curl -L $BASE/img/nav.svg                    -o nav.svg
+          curl -L $BASE/img/ce.svg                     -o ce.svg
+          curl -L $BASE/img/clb.svg                    -o clb.svg
+          curl -L $BASE/img/qb.svg                     -o qb.svg
+          curl -L $BASE/img/sponsor-getcracked.svg     -o sponsor-getcracked.svg
 
-          # 图标 & 字体
-          curl -L -O $BASE/img/logo.svg
-          curl -L -O $BASE/img/nav.svg
-          curl -L -O $BASE/img/ce.svg
-          curl -L -O $BASE/img/clb.svg
-          curl -L -O $BASE/img/qb.svg
-          curl -L -O $BASE/img/sponsor-getcracked.svg
-
-          # favicon & manifest
-          curl -L -O https://cppinsights.io/favicon.ico
-          curl -L -O https://cppinsights.io/manifest.json
+          # 根级资源
+          curl -L https://cppinsights.io/favicon.ico   -o favicon.ico
+          curl -L https://cppinsights.io/manifest.json -o manifest.json
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
