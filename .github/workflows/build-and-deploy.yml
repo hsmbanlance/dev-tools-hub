@@ -38,7 +38,7 @@ jobs:
         working-directory: tools/cppinsights   # 等价于 cd tools/cppinsights
         run: |
           llvm-config --version
-          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DINSIGHTS_STATIC=ON
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DINSIGHTS_STATIC=ON -DLLVM_LIBS="$LLVM_LIBS"
           cmake --build build --target insights
           mkdir -p ../../public/cppinsights
           cp -r build/insights/* ../../public/cppinsights/
