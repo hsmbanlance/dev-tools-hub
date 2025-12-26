@@ -1,0 +1,37 @@
+name: Static checks
+
+on:
+  pull_request:
+    paths:
+      - '**/*'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  html:
+    name: HTML validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run htmlhint
+        run: npx --yes htmlhint "site/**/*.html" || exit 1
+
+  yaml:
+    name: YAML validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install yamllint
+        run: python -m pip install --upgrade pip yamllint
+      - name: Run yamllint on workflows and site
+        run: yamllint -c .yamllint .github/workflows/*.yml || exit 1

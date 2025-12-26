@@ -1,5 +1,20 @@
 # dev-tools-hub
 
+## 🔍 CI 静态检查（htmlhint / yamllint）
+
+本仓库已添加一个专门的静态检查 workflow：`.github/workflows/static-checks.yml`，会在 PR 和 push 到 `main` 时运行：
+
+- HTML 校验（`htmlhint`）：检查 `site/**/*.html`。可本地运行：
+  - `npx --yes htmlhint "site/**/*.html"`
+- YAML 校验（`yamllint`）：检查 `.github/workflows/*.yml`（以及其它需要检查的 YAML）。可本地运行：
+  - `python -m pip install --upgrade pip yamllint`
+  - `yamllint -c .yamllint .github/workflows/*.yml`
+
+配置文件：
+- `.htmlhintrc` — HTMLHint 规则
+- `.yamllint` — yamllint 配置
+
+如果你希望我把这些检查作为必须通过的 status check（阻止合并），我可以继续配置分支保护规则或把 workflow 的触发条件细化。
 ## 🔧 静态检查与修复记录 ✅
 
 本次检查目标：
