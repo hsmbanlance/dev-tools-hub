@@ -23,7 +23,7 @@ jobs:
       - name: Pull upstream images
         run: |
           docker pull andreasfertig/cppinsights-webfrontend-container:latest
-          docker pull perfetto/perfetto:latest
+          docker pull ghcr.io/perfetto/perfetto:latest
           docker pull compilerexplorer/compiler-explorer:latest
 
       # 2. 复制静态文件
