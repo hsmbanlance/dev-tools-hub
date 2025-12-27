@@ -67,14 +67,15 @@ jobs:
           npm run webpack
           echo "=== webpack 产出树 ==="
           find . -type f -name "*.js" -o -name "*.css" -o -name "*.wasm" | grep -E '(runtime|vendor|main|worker)' | head -20
-          # 一般会在 ./dist/ 或 ./build/ 下
-          real_out=$(find . -maxdepth 2 -type d -name dist -o -name build | head -1)
-          echo "real output dir: $real_out"
-          # === 拷全目录 ===
-          cp -r "$real_out"/* ../../public/godbolt/
+          cp -r ./out/webpack/static/* ../../public/godbolt/
+          # 把入口文件也搬过去（在同目录）
+          cp ./out/dist/manifest.json ../../public/godbolt/
+
       # 3. 导航页
       - name: Copy landing page
-        run: cp -r site/* public/
+        run: |
+          cp -r site/* public/
+          ls -lR public/
 
       # 4. 上传 Pages 产物
       - uses: actions/upload-pages-artifact@v3
