@@ -64,7 +64,7 @@ jobs:
         run: |
           npm ci
           sed -i "s|publicPath: ['/\"]\?\./['/\"]\?|publicPath: './'|g" webpack.config.esm.ts
-          npm run webpack
+          npm run webpack -- --verbose
           ls -R out/dist
           cp -r out/dist/* ../../public/godbolt/
 
