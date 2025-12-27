@@ -59,7 +59,7 @@ jobs:
         working-directory: tools/compiler-explorer
         run: |
           npm ci
-          sed -i 's|publicPath: "/"|publicPath: "./"|g' webpack.config.js
+          sed -i "s|publicPath: ['/\"]\?\./['/\"]\?|publicPath: './'|g" webpack.config.esm.ts
           npm run webpack
           cp -r out/dist/* ../../public/godbolt/
 
