@@ -4,6 +4,8 @@ name: Build all tools & deploy to Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,50 +13,70 @@ permissions:
   pages: write
   id-token: write
 
-env:
-  LLVM_VERSION: "20.1.0" 
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {submodules: recursive}
+        with:
+          submodules: recursive
 
-      - name: Install LLVM/Clang
+      - name: Prepare public dirs
+        run: mkdir -p public/{cppinsights,perfetto,godbolt}
+
+      # 2. 复制静态文件
+      - name: Extract static files
         run: |
-          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
-          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/llvm.list
-          sudo apt-get update
-          sudo apt-get install -y clang-20 libclang-20-dev llvm-20-dev cmake ninja-build
+          set -euo pipefail
 
-      # 1. CppInsights  --------------------------
-      - name: Build CppInsights static web
-        working-directory: tools/cppinsights
-        run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DINSIGHTS_STATIC=ON \
-            -DCMAKE_CXX_COMPILER=clang++-20 \
-            -DCMAKE_C_COMPILER=clang-20
-          cmake --build build --target insight
-          mkdir -p ../../public/cppinsights
-          cp -r build/insight/* ../../public/cppinsights/
+          mkdir -p public/cppinsights
+          cd public/cppinsights
 
+          # 首页
+          curl -L https://cppinsights.io/ -o index.html
+
+          # 静态资源根目录
+          BASE=https://cppinsights.io/static
+
+          # CSS
+          curl -L $BASE/css/main.min.css      -o main.min.css
+          curl -L $BASE/css/cookie.min.css    -o cookie.min.css
+
+          # JS
+          curl -L $BASE/js/main.min.js        -o main.min.js
+          curl -L $BASE/js/cookie.min.js      -o cookie.min.js
+          curl -L $BASE/js/settings.min.js    -o settings.min.js
+          curl -L $BASE/js/cm.min.js          -o cm.min.js
+          curl -L $BASE/js/jquery-3.3.1.min.js -o jquery-3.3.1.min.js
+          curl -L $BASE/js/multiple-select.min.js -o multiple-select.min.js
+
+          # 图标
+          curl -L $BASE/img/logo.svg                   -o logo.svg
+          curl -L $BASE/img/nav.svg                    -o nav.svg
+          curl -L $BASE/img/ce.svg                     -o ce.svg
+          curl -L $BASE/img/clb.svg                    -o clb.svg
+          curl -L $BASE/img/qb.svg                     -o qb.svg
+          curl -L $BASE/img/sponsor-getcracked.svg     -o sponsor-getcracked.svg
+
+          # 根级资源
+          curl -L https://cppinsights.io/favicon.ico   -o favicon.ico
+          curl -L https://cppinsights.io/manifest.json -o manifest.json
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/perfetto/ui/package-lock.json}
+        with:
+          node-version: 20
       - name: Build Perfetto UI
-        working-directory: tools/perfetto/ui
+        working-directory: tools/perfetto
         run: |
-          npm ci && npm run build
-          mkdir -p ../../public/perfetto
-          cp -r dist/* ../../public/perfetto/
+          tools/install-build-deps --ui
+          ui/build
+          cp -r ui/out/dist/* ../../public/perfetto/
 
       # 3. Compiler Explorer (godbolt) --------
       - uses: actions/setup-node@v4
-        with: {node-version: 20, cache: 'npm', cache-dependency-path: tools/compiler-explorer/package-lock.json}
+        with:
+          node-version: 20
       - name: Build Compiler Explorer
         working-directory: tools/compiler-explorer
         run: |
@@ -62,12 +84,22 @@ jobs:
           mkdir -p ../public/godbolt
           cp -r out/dist/* ../public/godbolt/
 
-      # 4. 导航页 ------------------------------
-      - name: Create public dir & copy site
-        run: |
-          mkdir -p public
-          cp -r site/* public/
+      # 3. 导航页
+      - name: Copy landing page
+        run: cp -r site/* public/
 
-      # 5. 上传 Pages 产物 ----------------------
+      # 4. 上传 Pages 产物
       - uses: actions/upload-pages-artifact@v3
-        with: {path: public}
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
