@@ -49,7 +49,7 @@ jobs:
         working-directory: tools/perfetto
         run: |
           tools/install-build-deps --ui
-          ui/build --out out --base-url "./"
+          PUBLIC_PATH=./ ui/build --out out
           cp -r ui/out/dist/* ../../public/perfett
 
       # 3. Compiler Explorer (godbolt) --------
