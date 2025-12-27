@@ -32,15 +32,17 @@ jobs:
           # 1. 拉首页
           curl -L https://cppinsights.io/ -o index.html
           # 2. 用 wget 递归拉全站（仅本站，不跨域）
-          wget --mirror --convert-links --adjust-extension \
-            --no-parent --no-verbose --timeout=30 --wait=0.2 \
-            --reject='lnk?code=*' \
-            --directory-prefix=. \
-            https://cppinsights.io/
+          base=https://cppinsights.io
+          for f in cm/codemirror.js cm/codemirror.css css/s.min.css \
+            js/cookie.min.js js/main.min.js js/settings.min.js js/multiple-select.min.js \
+            img/ce.svg img/clb.svg img/logo.svg img/nav.svg img/qb.svg img/sponsor-getcracked.svg \
+            favicon.ico manifest.json; do
+            mkdir -p "$(dirname "$f")"
+            curl -L "$base/$f" -o "$f"
+          done
           # 3. 简单把绝对路径 "/static/..." 改相对 "./static/..."
-          find . -name "*.html" -exec sed -i 's|"/static/|"./static/|g' {} +
-          find . -name "*.html" -exec sed -i 's|"/favicon.ico|"./favicon.ico|g' {} +
-          find . -name "*.html" -exec sed -i 's|"/manifest.json|"./manifest.json|g' {} +
+          sed -i 's|"/cm/|"./cm/|g; s|"/css/|"./css/|g; s|"/js/|"./js/|g; s|"/img/|"./img/|g' index.html
+          sed -i 's|"/favicon.ico|"./favicon.ico|g; s|"/manifest.json|"./manifest.json|g' index.html
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
