@@ -25,42 +25,24 @@ jobs:
         run: mkdir -p public/{cppinsights,perfetto,godbolt}
 
       # 2. 复制静态文件
-      - name: Extract static files
+      - name: Download & fix CppInsights static files
         run: |
-          set -euo pipefail
-
           mkdir -p public/cppinsights
           cd public/cppinsights
-
-          # 首页
+          # 1. 拉首页
           curl -L https://cppinsights.io/ -o index.html
-
-          # 静态资源根目录
-          BASE=https://cppinsights.io/static
-
-          # CSS
-          curl -L $BASE/css/main.min.css      -o main.min.css
-          curl -L $BASE/css/cookie.min.css    -o cookie.min.css
-
-          # JS
-          curl -L $BASE/js/main.min.js        -o main.min.js
-          curl -L $BASE/js/cookie.min.js      -o cookie.min.js
-          curl -L $BASE/js/settings.min.js    -o settings.min.js
-          curl -L $BASE/js/cm.min.js          -o cm.min.js
-          curl -L $BASE/js/jquery-3.3.1.min.js -o jquery-3.3.1.min.js
-          curl -L $BASE/js/multiple-select.min.js -o multiple-select.min.js
-
-          # 图标
-          curl -L $BASE/img/logo.svg                   -o logo.svg
-          curl -L $BASE/img/nav.svg                    -o nav.svg
-          curl -L $BASE/img/ce.svg                     -o ce.svg
-          curl -L $BASE/img/clb.svg                    -o clb.svg
-          curl -L $BASE/img/qb.svg                     -o qb.svg
-          curl -L $BASE/img/sponsor-getcracked.svg     -o sponsor-getcracked.svg
-
-          # 根级资源
-          curl -L https://cppinsights.io/favicon.ico   -o favicon.ico
-          curl -L https://cppinsights.io/manifest.json -o manifest.json
+          # 2. 用 wget 递归拉全站（仅本站，不跨域）
+          base=https://cppinsights.io
+          for f in cm/codemirror.js cm/codemirror.css css/s.min.css \
+            js/cookie.min.js js/main.min.js js/settings.min.js js/multiple-select.min.js \
+            img/ce.svg img/clb.svg img/logo.svg img/nav.svg img/qb.svg img/sponsor-getcracked.svg \
+            favicon.ico manifest.json; do
+            mkdir -p "$(dirname "$f")"
+            curl -L "$base/$f" -o "$f"
+          done
+          # 3. 简单把绝对路径 "/static/..." 改相对 "./static/..."
+          sed -i 's|"/cm/|"./cm/|g; s|"/css/|"./css/|g; s|"/js/|"./js/|g; s|"/img/|"./img/|g' index.html
+          sed -i 's|"/favicon.ico|"./favicon.ico|g; s|"/manifest.json|"./manifest.json|g' index.html
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
@@ -70,8 +52,8 @@ jobs:
         working-directory: tools/perfetto
         run: |
           tools/install-build-deps --ui
-          ui/build
-          cp -r ui/out/dist/* ../../public/perfetto/
+          PUBLIC_PATH=./ ui/build --out out
+          cp -r ui/out/dist/* ../../public/perfetto
 
       # 3. Compiler Explorer (godbolt) --------
       - uses: actions/setup-node@v4
@@ -80,13 +62,20 @@ jobs:
       - name: Build Compiler Explorer
         working-directory: tools/compiler-explorer
         run: |
-          npm ci && npm run webpack
-          mkdir -p ../public/godbolt
-          cp -r out/dist/* ../public/godbolt/
+          npm ci
+          sed -i "s|publicPath: ['/\"]\?\./['/\"]\?|publicPath: './'|g" webpack.config.esm.ts
+          npm run webpack
+          echo "=== webpack 产出树 ==="
+          find . -type f -name "*.js" -o -name "*.css" -o -name "*.wasm" | grep -E '(runtime|vendor|main|worker)' | head -20
+          cp -r ./out/webpack/static/* ../../public/godbolt/
+          # 把入口文件也搬过去（在同目录）
+          cp ./out/dist/manifest.json ../../public/godbolt/
 
       # 3. 导航页
       - name: Copy landing page
-        run: cp -r site/* public/
+        run: |
+          cp -r site/* public/
+          ls -lR public/
 
       # 4. 上传 Pages 产物
       - uses: actions/upload-pages-artifact@v3
