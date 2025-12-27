@@ -49,8 +49,8 @@ jobs:
         working-directory: tools/perfetto
         run: |
           tools/install-build-deps --ui
-          ui/build --out out --base-url "./"
-          cp -r ui/out/dist/* ../../public/perfett
+          PUBLIC_PATH=./ ui/build --out out
+          cp -r ui/out/dist/* ../../public/perfetto
 
       # 3. Compiler Explorer (godbolt) --------
       - uses: actions/setup-node@v4
