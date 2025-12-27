@@ -32,13 +32,14 @@ jobs:
           # 1. 拉首页
           curl -L https://cppinsights.io/ -o index.html
           # 2. 用 wget 递归拉全站（仅本站，不跨域）
-          wget --no-verbose -e robots=off -np -nH --cut-dirs=1 \
-            -I /static,/favicon.ico,/manifest.json \
-            -r -P . https://cppinsights.io/
+          wget --mirror --convert-links --adjust-extension \
+            --no-parent --no-verbose --timeout=30 --wait=0.2 \
+            --directory-prefix=. \
+            https://cppinsights.io/
           # 3. 简单把绝对路径 "/static/..." 改相对 "./static/..."
-          sed -i 's|"/static/|"./static/|g' index.html
-          sed -i 's|"/favicon.ico|"./favicon.ico|g' index.html
-          sed -i 's|"/manifest.json|"./manifest.json|g' index.html
+          find . -name "*.html" -exec sed -i 's|"/static/|"./static/|g' {} +
+          find . -name "*.html" -exec sed -i 's|"/favicon.ico|"./favicon.ico|g' {} +
+          find . -name "*.html" -exec sed -i 's|"/manifest.json|"./manifest.json|g' {} +
 
       # 2. Perfetto UI --------------------------
       - uses: actions/setup-node@v4
@@ -61,6 +62,7 @@ jobs:
           npm ci
           sed -i "s|publicPath: ['/\"]\?\./['/\"]\?|publicPath: './'|g" webpack.config.esm.ts
           npm run webpack
+          ls -R out/dist
           cp -r out/dist/* ../../public/godbolt/
 
       # 3. 导航页
