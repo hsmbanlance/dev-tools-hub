@@ -64,10 +64,9 @@ jobs:
         run: |
           npm ci
           sed -i "s|publicPath: ['/\"]\?\./['/\"]\?|publicPath: './'|g" webpack.config.esm.ts
-          npm run webpack -- --verbose
-          ls -R out/dist
-          cp -r out/dist/* ../../public/godbolt/
-
+          npm run webpack
+          ls -R ../../dist
+          cp -r ../../dist/* ../../public/godbolt/
       # 3. 导航页
       - name: Copy landing page
         run: cp -r site/* public/
